@@ -342,10 +342,10 @@ stateDiagram-v2
     SYNCING --> SYNCHRONIZED: 达到精度目标<br/>(Offset < 1μs)
     
     SYNCHRONIZED --> SYNCING: 定期同步
-    SYNCHRONIZED --> HOLDover: 失去主时钟信号
+    SYNCHRONIZED --> HOLDOVER: 失去主时钟信号
     
-    HOLDover --> DISCOVERING: Holdover超时
-    HOLDover --> SYNCING: 重新发现主时钟
+    HOLDOVER --> DISCOVERING: Holdover超时
+    HOLDOVER --> SYNCING: 重新发现主时钟
     
     SYNCING --> DISCOVERING: 主时钟故障
     
@@ -360,7 +360,7 @@ stateDiagram-v2
 - **SLAVE**: 作为Slave节点运行
 - **SYNCING**: 正在进行时间同步
 - **SYNCHRONIZED**: 已达到同步精度目标
-- **HOLDover**: 失去主时钟，保持模式运行
+- **HOLDOVER**: 失去主时钟，保持模式运行
 
 #### 4.2.4 时钟校正流程
 
