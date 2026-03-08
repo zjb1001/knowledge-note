@@ -10,9 +10,9 @@
 
 ### AUTOSAR
 
-| 日期 | 标题 | 作者 | 关键词 | 文件 |
-|------|------|------|--------|------|
-| 2026-03-08 | AUTOSAR CP 诊断协议栈拆解：DCM、DEM、FiM | 莫无涯 | DCM, DEM, FiM, UDS, 诊断 | [autosar-dcm-dem-fim-analysis.md](./articles/autosar-dcm-dem-fim-analysis.md) |
+| 日期 | 标题 | 作者 | 关键词 | 文件 | 图表 |
+|------|------|------|--------|------|------|
+| 2026-03-08 | AUTOSAR CP 诊断协议栈拆解：DCM、DEM、FiM | 莫无涯 | DCM, DEM, FiM, UDS, 诊断 | [文章](./articles/autosar-dcm-dem-fim-analysis.md) | [图表集](./articles/autosar-diagnostics-diagrams.md) |
 
 ---
 
