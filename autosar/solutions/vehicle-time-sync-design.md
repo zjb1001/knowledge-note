@@ -48,7 +48,54 @@
 - 支持：AUTOSAR Time Sync over Ethernet
 - 兼容：支持CAN的时间同步桥接
 
-### 2.2 系统架构
+### 2.2 系统架构图
+
+```mermaid
+graph TB
+    subgraph 外部授时["🛰️ 外部授时"]
+        GPS["GPS/GNSS模块"]
+        PPS["PPS + ToD信号"]
+    end
+
+    subgraph 骨干网络["🌐 车载以太网骨干"]
+        GM["🎯 Grand Master<br/>主域控制器<br/>(TC397TP)"]
+        SW1["🔄 TSN交换机 #1<br/>(SJA1110)"]
+        SW2["🔄 TSN交换机 #2<br/>(SJA1110)"]
+    end
+
+    subgraph 域控制器["🚗 各域控制器 (gPTP从节点)"]
+        ADAS["智驾域<br/>摄像头/雷达融合"]
+        CHASSIS["底盘域<br/>ESC/EPS/EHB"]
+        POWER["动力域<br/>电机/BMS/VCU"]
+        COCKPIT["座舱域<br/>IVI/仪表"]
+    end
+
+    subgraph 传感器["📡 传感器/执行器"]
+        CAM["摄像头"]
+        RADAR["毫米波雷达"]
+        LIDAR["激光雷达"]
+        ESC["ESC控制器"]
+    end
+
+    GPS --> PPS
+    PPS --> GM
+    GM --> SW1
+    SW1 --> SW2
+    SW1 --> ADAS
+    SW1 --> CHASSIS
+    SW2 --> POWER
+    SW2 --> COCKPIT
+    ADAS --> CAM
+    ADAS --> RADAR
+    ADAS --> LIDAR
+    CHASSIS --> ESC
+
+    style GM fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    style SW1 fill:#4dabf7,stroke:#1971c2,color:#fff
+    style SW2 fill:#4dabf7,stroke:#1971c2,color:#fff
+```
+
+### 2.3 网络拓扑架构
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -174,29 +221,94 @@ OCXO (25MHz)
 
 ### 4.2 gPTP 协议实现
 
-**关键模块**:
+#### 4.2.1 BMCA (Best Master Clock Algorithm) 流程
 
-#### 4.2.1 BMCA (Best Master Clock Algorithm)
-- 自动选择网络中的最佳主时钟
-- 比较时钟等级、精度、稳定性
-- 故障时自动切换主时钟
-
-#### 4.2.2 时间同步机制
-
-**Sync 消息流程**:
+```mermaid
+flowchart TD
+    Start([系统启动]) --> Init[初始化gPTP协议栈]
+    Init --> Announce[发送/接收Announce消息]
+    Announce --> Compare{比较时钟优先级}
+    
+    Compare -->|本节点优先级高| BecomeGM[成为Grand Master]
+    Compare -->|其他节点优先级高| BecomeSlave[成为Slave节点]
+    Compare -->|优先级相同| Compare2{比较时钟质量}
+    
+    Compare2 -->|本节点质量好| BecomeGM
+    Compare2 -->|其他节点质量好| BecomeSlave
+    Compare2 -->|质量相同| Compare3{比较MAC地址}
+    
+    Compare3 -->|MAC地址大| BecomeGM
+    Compare3 -->|MAC地址小| BecomeSlave
+    
+    BecomeGM --> Sync[发送Sync消息同步网络]
+    BecomeSlave --> Receive[接收Sync消息同步本地时钟]
+    
+    Sync --> Monitor[监控时钟源状态]
+    Receive --> Monitor
+    
+    Monitor --> GM_Fail{主时钟故障?}
+    GM_Fail -->|是| Reelect[重新选举主时钟]
+    GM_Fail -->|否| Sync
+    
+    Reelect --> Announce
+    
+    style Start fill:#69db7c
+    style BecomeGM fill:#ff6b6b,color:#fff
+    style BecomeSlave fill:#4dabf7,color:#fff
+    style GM_Fail fill:#ffd43b
 ```
-Master                    Slave
-  │                         │
-  │── Sync(t1) ────────────>│  t1: Master发送时间
-  │                         │
-  │── Follow_Up(t1) ───────>│  t1的精确时间戳
-  │                         │
-  │<── Delay_Req(t2) ───────│  t2: Slave发送时间
-  │                         │
-  │── Delay_Resp(t3) ──────>│  t3: Master接收时间
-  │                         │
-  [计算Offset = ((t2-t1) + (t4-t3)) / 2]
-  [计算Delay = ((t2-t1) + (t4-t3)) / 2]
+
+**BMCA选举规则**（优先级从高到低）：
+1. **Priority1**: 用户配置优先级（0-255，越小越高）
+2. **ClockClass**: 时钟等级（如6=GPS同步，52=保持模式）
+3. **ClockAccuracy**: 时钟精度（如0x20=<1μs）
+4. **Priority2**: 次级优先级（0-255）
+5. **ClockIdentity**: 64位MAC地址（越大优先级越高）
+
+#### 4.2.2 gPTP 时间同步时序图
+
+```mermaid
+sequenceDiagram
+    participant GM as Grand Master<br/>主时钟
+    participant SW as TSN交换机
+    participant S1 as Slave 1<br/>智驾域
+    participant S2 as Slave 2<br/>底盘域
+
+    Note over GM,S2: 第一阶段：时间同步消息交换
+
+    rect rgb(255, 235, 238)
+        Note over GM,S2: Sync消息传输（测量传输延迟）
+        GM->>SW: Sync(t1)
+        Note right of GM: t1 = 发送时刻<br/>10:00:00.000000
+        
+        SW->>S1: 转发Sync
+        Note left of S1: t2 = 接收时刻<br/>10:00:00.000050
+        
+        SW->>S2: 转发Sync
+        Note left of S2: t2' = 接收时刻<br/>10:00:00.000060
+    end
+
+    rect rgb(227, 242, 253)
+        Note over GM,S2: Follow_Up消息（传递精确发送时间）
+        GM-->>SW: Follow_Up(t1)
+        SW-->>S1: 转发Follow_Up
+        Note left of S1: 获取t1用于计算Offset
+        SW-->>S2: 转发Follow_Up
+    end
+
+    rect rgb(255, 249, 230)
+        Note over GM,S2: Delay_Req/Delay_Resp（测量路径延迟）
+        S1->>SW: Delay_Req(t3)
+        Note left of S1: t3 = 发送时刻<br/>10:00:00.001000
+        SW->>GM: 转发Delay_Req
+        Note left of GM: t4 = 接收时刻<br/>10:00:00.001020
+        
+        GM-->>SW: Delay_Resp(t4)
+        SW-->>S1: 转发Delay_Resp
+        Note left of S1: 获取t4用于计算Delay
+    end
+
+    Note over S1: 计算结果：<br/>Offset = 25μs<br/>Delay = 50μs
 ```
 
 **计算公式**:
@@ -211,15 +323,82 @@ Delay  = ((t2 - t1) + (t4 - t3)) / 2
 - t4: Delay_Req到达Master的时间
 ```
 
-#### 4.2.3 时钟校正
+#### 4.2.3 时钟同步状态机
 
-**频率同步** (Rate Ratio):
-- 计算 Master/Slave 时钟频率比
-- 通过 Sync/Follow_Up 消息间隔计算
+```mermaid
+stateDiagram-v2
+    [*] --> INIT: 系统启动
+    
+    INIT --> DISCOVERING: 启动gPTP
+    
+    DISCOVERING --> MASTER: BMCA选举<br/>成为主时钟
+    DISCOVERING --> SLAVE: BMCA选举<br/>成为从时钟
+    
+    MASTER --> SYNCING: 发送Sync消息
+    
+    SLAVE --> SYNCING: 接收Sync消息
+    SLAVE --> SYNCING: 校准本地时钟
+    
+    SYNCING --> SYNCHRONIZED: 达到精度目标<br/>(Offset < 1μs)
+    
+    SYNCHRONIZED --> SYNCING: 定期同步
+    SYNCHRONIZED --> HOLDOVER: 失去主时钟信号
+    
+    HOLDOVER --> DISCOVERING: Holdover超时
+    HOLDOVER --> SYNCING: 重新发现主时钟
+    
+    SYNCING --> DISCOVERING: 主时钟故障
+    
+    MASTER --> DISCOVERING: 检测到更高优先级时钟
+    SLAVE --> DISCOVERING: BMCA重新选举
+```
 
-**相位同步** (Offset Correction):
-- 根据 Offset 调整本地时钟
-- 使用 PI 控制器平滑调整
+**状态说明**:
+- **INIT**: 初始化状态
+- **DISCOVERING**: 发现网络中的时钟节点
+- **MASTER**: 作为Grand Master运行
+- **SLAVE**: 作为Slave节点运行
+- **SYNCING**: 正在进行时间同步
+- **SYNCHRONIZED**: 已达到同步精度目标
+- **HOLDOVER**: 失去主时钟，保持模式运行
+
+#### 4.2.4 时钟校正流程
+
+```mermaid
+flowchart LR
+    subgraph 输入["📥 时间戳输入"]
+        t1["t1: Master发送Sync"]
+        t2["t2: Slave接收Sync"]
+        t3["t3: Slave发送Delay_Req"]
+        t4["t4: Master接收Delay_Req"]
+    end
+
+    subgraph 计算["🧮 计算过程"]
+        direction TB
+        calc1["计算路径延迟:<br/>Delay = ((t2-t1) + (t4-t3)) / 2"]
+        calc2["计算时钟偏差:<br/>Offset = ((t2-t1) - (t4-t3)) / 2"]
+        calc3["频率比计算:<br/>RateRatio = (t2'-t2) / (t1'-t1)"]
+    end
+
+    subgraph 输出["📤 时钟校正"]
+        adj1["相位校正:<br/>调整本地时钟Offset"]
+        adj2["频率校正:<br/>调整时钟RateRatio"]
+        result["同步精度 < 1μs ✅"]
+    end
+
+    t1 --> calc1
+    t2 --> calc1
+    t3 --> calc1
+    t4 --> calc1
+    calc1 --> calc2
+    calc2 --> calc3
+    calc3 --> adj1
+    calc3 --> adj2
+    adj1 --> result
+    adj2 --> result
+
+    style result fill:#69db7c
+```
 
 ### 4.3 MCAL 配置要点
 
@@ -303,7 +482,58 @@ GptChannelConfigSet_GptChannelConfig_0:
                     └──────────────┘
 ```
 
-### 6.2 测试用例
+### 6.2 测试验证流程
+
+```mermaid
+flowchart TB
+    subgraph 环境搭建["🔧 测试环境搭建"]
+        DUT_GM["Grand Master<br/>(DUT)"]
+        DUT_SW["TSN交换机<br/>(DUT)"]
+        DUT_SLAVE["Slave节点<br/>(DUT)"]
+        REF["参考时钟<br/>(铷原子钟)"]
+        ANALYZER["时间分析仪<br/>(Vector VN5640)"]
+    end
+
+    subgraph 功能测试["✅ 功能测试"]
+        TC1["TC-001:<br/>gPTP协议握手"]
+        TC2["TC-002:<br/>BMCA选举"]
+        TC3["TC-003:<br/>时间同步精度"]
+        TC4["TC-004:<br/>故障切换"]
+    end
+
+    subgraph 性能测试["⚡ 性能测试"]
+        TC5["TC-005:<br/>收敛时间"]
+        TC6["TC-006:<br/>保持能力"]
+        TC7["TC-007:<br/>温度影响"]
+        TC8["TC-008:<br/>EMC干扰"]
+    end
+
+    subgraph 结果分析["📊 结果分析"]
+        REPORT["测试报告生成"]
+        PASS{"全部通过?"}
+        FIX["问题修复"]
+        CERT["认证通过 ✅"]
+    end
+
+    DUT_GM --> TC1
+    DUT_SW --> TC1
+    DUT_SLAVE --> TC1
+    REF --> TC3
+    ANALYZER --> TC3
+
+    TC1 --> TC2 --> TC3 --> TC4
+    TC4 --> TC5 --> TC6 --> TC7 --> TC8
+    TC8 --> REPORT
+    REPORT --> PASS
+    PASS -->|否| FIX
+    FIX --> TC1
+    PASS -->|是| CERT
+
+    style CERT fill:#69db7c
+    style FIX fill:#ff6b6b,color:#fff
+```
+
+### 6.3 测试用例详情
 
 | 测试项 | 方法 | 通过标准 |
 |--------|------|----------|
@@ -313,31 +543,6 @@ GptChannelConfigSet_GptChannelConfig_0:
 | 主时钟切换 | 强制主时钟故障 | < 100ms |
 | 温度影响 | -40°C ~ 85°C循环 | 精度满足 |
 | EMC干扰 | 传导/辐射抗扰 | 功能正常 |
-
-### 6.3 自动化测试脚本
-
-```python
-# 时间同步精度测试
-import time
-import can
-
-def test_time_sync_accuracy(duration=300):
-    """测试5分钟内的同步精度"""
-    errors = []
-    for _ in range(duration):
-        master_time = get_master_timestamp()
-        slave_time = get_slave_timestamp()
-        offset = abs(master_time - slave_time)
-        errors.append(offset)
-        time.sleep(1)
-    
-    avg_offset = sum(errors) / len(errors)
-    max_offset = max(errors)
-    
-    assert avg_offset < 500e-9, f"平均偏差超标: {avg_offset}"
-    assert max_offset < 1e-6, f"最大偏差超标: {max_offset}"
-    print(f"✓ 同步精度测试通过: 平均={avg_offset*1e9:.1f}ns, 最大={max_offset*1e9:.1f}ns")
-```
 
 ---
 
@@ -358,12 +563,94 @@ def test_time_sync_accuracy(duration=300):
 激光雷达: t=100.000ms ± 500ns
 ```
 
-### 7.2 底盘域协同控制
+### 7.2 底盘域协同控制时序
 
-**ESC + EPS + EHB 协同**:
-- 控制周期：2ms
-- 时间同步精度：< 100μs
-- 作用：确保各执行器动作时序一致
+**ESC + EPS + EHB 协同制动**:
+
+```mermaid
+sequenceDiagram
+    participant VCU as VCU<br/>整车控制
+    participant EHB as EHB<br/>电子液压制动
+    participant ESC as ESC<br/>电子稳定控制
+    participant EPS as EPS<br/>电动助力转向
+
+    Note over VCU,EPS: 控制周期: 2ms<br/>同步精度: < 100μs
+
+    rect rgb(255, 235, 238)
+        Note over VCU,EPS: T=0ms: 制动请求
+        VCU->>EHB: 制动请求 (减速度 0.6g)<br/>t=0.000
+        Note right of VCU: 发送时间戳<br/>同步误差 < 50μs
+    end
+
+    rect rgb(227, 242, 253)
+        Note over VCU,EPS: T=0.5ms: 协调控制
+        EHB->>ESC: 制动压力状态<br/>t=0.500
+        VCU->>EPS: 后轮转角 3°<br/>t=0.550
+        Note right of VCU: 横摆力矩补偿
+    end
+
+    rect rgb(232, 245, 233)
+        Note over VCU,EPS: T=1.0ms: 执行动作
+        ESC->>EHB: 轮缸压力调节<br/>t=1.000
+        EPS-->>VCU: 转向扭矩反馈<br/>t=1.050
+        EHB-->>VCU: 制动执行确认<br/>t=1.080
+    end
+
+    rect rgb(255, 249, 230)
+        Note over VCU,EPS: T=2.0ms: 下一周期
+        Note over VCU,EPS: 循环执行<br/>周期抖动 < 100μs
+    end
+```
+
+### 7.3 传感器数据融合流程
+
+**多传感器时间对齐**:
+
+```mermaid
+flowchart TB
+    subgraph 采集["📡 传感器数据采集"]
+        CAM["摄像头<br/>30fps"]
+        RADAR["毫米波雷达<br/>20fps"]
+        LIDAR["激光雷达<br/>10fps"]
+        IMU["IMU<br/>100Hz"]
+    end
+
+    subgraph 时间戳["⏱️ gPTP时间戳标记"]
+        TS_CAM["t=100.000000s"]
+        TS_RADAR["t=100.000020s"]
+        TS_LIDAR["t=100.000050s"]
+        TS_IMU["t=100.000010s"]
+    end
+
+    subgraph 同步["🔄 时间同步处理"]
+        BUFFER["同步缓冲区<br/>最大等待 50ms"]
+        ALIGN["时间对齐<br/>插值/外推"]
+    end
+
+    subgraph 融合["🧠 数据融合"]
+        FUSION["多传感器融合算法"]
+        OUTPUT["感知结果输出"]
+    end
+
+    CAM --> TS_CAM
+    RADAR --> TS_RADAR
+    LIDAR --> TS_LIDAR
+    IMU --> TS_IMU
+
+    TS_CAM --> BUFFER
+    TS_RADAR --> BUFFER
+    TS_LIDAR --> BUFFER
+    TS_IMU --> BUFFER
+
+    BUFFER --> ALIGN
+    ALIGN --> FUSION
+    FUSION --> OUTPUT
+
+    style TS_CAM fill:#ff6b6b,color:#fff
+    style TS_RADAR fill:#4dabf7,color:#fff
+    style TS_LIDAR fill:#69db7c,color:#000
+    style TS_IMU fill:#ffd43b,color:#000
+```
 
 ### 7.3 数据记录与回放
 
@@ -378,15 +665,51 @@ def test_time_sync_accuracy(duration=300):
 
 ## 8. 实施建议
 
-### 8.1 开发阶段
+### 8.1 开发阶段甘特图
 
-| 阶段 | 周期 | 交付物 |
-|------|------|--------|
-| 需求分析 | 2周 | 需求规格书 |
-| 硬件设计 | 4周 | 原理图、BOM |
-| 软件开发 | 8周 | gPTP协议栈、MCAL配置 |
-| 集成测试 | 4周 | 测试报告 |
-| 量产准备 | 2周 | 产线测试方案 |
+```mermaid
+gantt
+    title 整车时间同步项目开发计划
+    dateFormat  YYYY-MM-DD
+    section 阶段1: 需求分析
+    需求收集           :a1, 2024-03-01, 7d
+    方案设计           :a2, after a1, 7d
+    需求评审           :milestone, after a2, 0d
+    
+    section 阶段2: 硬件设计
+    芯片选型           :b1, after a2, 7d
+    原理图设计         :b2, after b1, 14d
+    PCB Layout         :b3, after b2, 14d
+    硬件评审           :milestone, after b3, 0d
+    
+    section 阶段3: 软件开发
+    gPTP协议栈移植     :c1, after b1, 21d
+    MCAL配置           :c2, after b1, 14d
+    StbM集成           :c3, after c1, 14d
+    应用层开发         :c4, after c3, 21d
+    软件评审           :milestone, after c4, 0d
+    
+    section 阶段4: 集成测试
+    硬件调试           :d1, after b3, 14d
+    软件调试           :d2, after c4, 14d
+    系统联调           :d3, after d1, 14d
+    性能测试           :d4, after d3, 14d
+    
+    section 阶段5: 量产准备
+    产线测试方案       :e1, after d4, 7d
+    文档整理           :e2, after d4, 7d
+    量产评审           :milestone, after e2, 0d
+```
+
+**开发阶段详情**:
+
+| 阶段 | 周期 | 关键交付物 | 依赖 |
+|------|------|------------|------|
+| 需求分析 | 2周 | 需求规格书、系统架构图 | - |
+| 硬件设计 | 4周 | 原理图、PCB、BOM | 需求冻结 |
+| 软件开发 | 8周 | gPTP协议栈、MCAL配置、StbM | 芯片选型 |
+| 集成测试 | 4周 | 测试报告、性能数据 | 软硬件完成 |
+| 量产准备 | 2周 | 产线测试方案、用户手册 | 测试通过 |
 
 ### 8.2 风险评估
 
