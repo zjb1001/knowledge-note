@@ -1,0 +1,230 @@
+# WeAgent 多 Agent 编排配置
+# 项目：智能底盘一体化控制与高阶智能驾驶关键技术内容定制
+# 目标：基于培训大纲，完成架构解构、详细设计和实现层框架
+
+project:
+  name: "智能底盘与高阶智驾技术知识库构建"
+  version: "1.0.0"
+  description: "基于培训大纲，构建完整的技术知识体系，包含架构设计、详细设计文档和实现层框架代码"
+  output_dir: "./output/chassis-ad-autonomous"
+
+# ============================================
+# Agent 定义
+# ============================================
+agents:
+  
+  # Agent 1: 内容分析器 - 提取大纲核心知识点
+  - id: "content_analyzer"
+    name: "内容分析专家"
+    role: "从培训大纲中提取核心知识点，建立知识图谱"
+    model: "kimi-coding/k2p5"
+    thinking: "high"
+    system_prompt: |
+      你是一位资深的汽车电子架构分析师，专注于智能底盘和高阶智能驾驶领域。
+      你的任务是从培训大纲中提取核心知识点，建立完整的知识图谱。
+      
+      输出要求：
+      1. 提取所有技术概念、系统模块、功能要求
+      2. 建立知识点之间的依赖关系
+      3. 识别关键技术和难点
+      4. 按重要性排序知识点
+      
+      输出格式：结构化 Markdown，包含知识树和关系图
+
+  # Agent 2: 架构设计师 - 解构系统架构
+  - id: "architect_designer"
+    name: "系统架构设计师"
+    role: "设计智能底盘与高阶智驾的整体架构"
+    model: "kimi-coding/k2p5"
+    thinking: "high"
+    system_prompt: |
+      你是一位资深的汽车电子架构师，精通域控制器架构、底盘电控系统和高阶自动驾驶系统设计。
+      
+      你的任务是：
+      1. 设计智能底盘域的整体架构（ICC/RWS/ASC/VDMC）
+      2. 设计高阶智能驾驶的系统架构
+      3. 定义模块间的接口和交互关系
+      4. 设计安全架构（功能安全/预期功能安全）
+      5. 使用 Mermaid 绘制架构图
+      
+      输出要求：
+      - 系统架构图（Mermaid）
+      - 模块划分和职责定义
+      - 接口定义文档
+      - 数据流图
+
+  # Agent 3: 详细设计师 - 展开模块详细设计
+  - id: "detailed_designer"
+    name: "详细设计工程师"
+    role: "完成各模块的详细设计文档"
+    model: "kimi-coding/k2p5"
+    thinking: "high"
+    system_prompt: |
+      你是一位资深的底盘控制软件工程师，精通制动/转向/悬架控制系统设计。
+      
+      负责模块详细设计：
+      1. ICC（一体化制动控制）详细设计
+      2. RWS（后轮转向）详细设计
+      3. ASC（空气悬架）详细设计
+      4. VDMC（整车动态稳定）详细设计
+      5. 高阶智驾控制策略详细设计
+      
+      每个模块需包含：
+      - 功能需求规格
+      - 控制算法设计
+      - 状态机设计
+      - 故障处理策略
+      - 与外部系统的接口
+
+  # Agent 4: 实现层规划师 - 代码框架设计
+  - id: "implementation_planner"
+    name: "实现层架构师"
+    role: "设计软件实现层框架和代码结构"
+    model: "kimi-coding/k2p5"
+    thinking: "high"
+    system_prompt: |
+      你是一位资深的嵌入式软件架构师，精通 AUTOSAR、底盘控制软件开发。
+      
+      你的任务是设计实现层框架：
+      1. 软件架构设计（符合 AUTOSAR 规范）
+      2. 组件接口定义（C 语言头文件）
+      3. 状态机实现框架
+      4. 控制算法伪代码/框架
+      5. 测试用例框架
+      
+      输出要求：
+      - 完整的 C 语言头文件 (.h)
+      - 核心模块的实现框架 (.c 模板)
+      - 配置文件模板 (ARXML/JSON)
+      - 测试框架代码
+
+  # Agent 5: 质量审核员 - 内容质量把关
+  - id: "quality_reviewer"
+    name: "技术内容审核专家"
+    role: "审核所有输出内容的质量和完整性"
+    model: "kimi-coding/k2p5"
+    thinking: "high"
+    system_prompt: |
+      你是一位资深的技术内容审核专家，对智能底盘和自动驾驶领域有深入理解。
+      
+      审核维度：
+      1. 技术准确性：概念、原理、算法是否正确
+      2. 完整性：是否覆盖大纲所有要点
+      3. 一致性：架构设计与详细设计是否一致
+      4. 可实现性：设计是否可落地实现
+      5. 文档质量：结构清晰、图表完整
+      
+      输出审核报告，指出问题并提供改进建议
+
+# ============================================
+# 工作流编排
+# ============================================
+workflow:
+  name: "智能底盘知识库构建工作流"
+  description: "多 Agent 协作完成从大纲到实现层的完整设计"
+  
+  stages:
+    # Stage 1: 内容分析
+    - name: "内容分析阶段"
+      parallel: false
+      tasks:
+        - agent: "content_analyzer"
+          task: "分析培训大纲，提取知识点"
+          input: "training_outline.md"
+          output: "knowledge_graph.md"
+          
+    # Stage 2: 架构设计
+    - name: "架构设计阶段"
+      parallel: false
+      tasks:
+        - agent: "architect_designer"
+          task: "设计智能底盘与高阶智驾系统架构"
+          input: "knowledge_graph.md"
+          output: "system_architecture.md"
+          
+    # Stage 3: 详细设计（并行处理多个模块）
+    - name: "详细设计阶段"
+      parallel: true
+      tasks:
+        - agent: "detailed_designer"
+          task: "ICC 一体化制动控制详细设计"
+          input: "system_architecture.md"
+          output: "detailed_design_icc.md"
+          
+        - agent: "detailed_designer"
+          task: "RWS 后轮转向控制详细设计"
+          input: "system_architecture.md"
+          output: "detailed_design_rws.md"
+          
+        - agent: "detailed_designer"
+          task: "ASC 空气悬架控制详细设计"
+          input: "system_architecture.md"
+          output: "detailed_design_asc.md"
+          
+        - agent: "detailed_designer"
+          task: "VDMC 整车动态稳定控制详细设计"
+          input: "system_architecture.md"
+          output: "detailed_design_vdmc.md"
+          
+        - agent: "detailed_designer"
+          task: "高阶智驾控制策略详细设计"
+          input: "system_architecture.md"
+          output: "detailed_design_ad.md"
+          
+    # Stage 4: 实现层设计
+    - name: "实现层设计阶段"
+      parallel: false
+      tasks:
+        - agent: "implementation_planner"
+          task: "设计软件实现层框架和代码结构"
+          input: ["detailed_design_icc.md", "detailed_design_rws.md", "detailed_design_asc.md", "detailed_design_vdmc.md", "detailed_design_ad.md"]
+          output: "implementation_framework/"
+          
+    # Stage 5: 质量审核
+    - name: "质量审核阶段"
+      parallel: false
+      tasks:
+        - agent: "quality_reviewer"
+          task: "审核所有设计文档和代码框架"
+          input: ["system_architecture.md", "detailed_design_*.md", "implementation_framework/"]
+          output: "quality_report.md"
+
+# ============================================
+# 输入文档定义
+# ============================================
+inputs:
+  training_outline:
+    path: "./input/training_outline.md"
+    description: "培训大纲原文"
+    
+# ============================================
+# 输出结构定义
+# ============================================
+outputs:
+  structure:
+    - path: "01-knowledge-graph/"
+      description: "知识图谱和分析结果"
+    - path: "02-system-architecture/"
+      description: "系统架构设计文档"
+    - path: "03-detailed-design/"
+      description: "详细设计文档（按模块组织）"
+    - path: "04-implementation/"
+      description: "实现层框架代码"
+    - path: "05-quality-report/"
+      description: "质量审核报告"
+
+# ============================================
+# 质量门禁
+# ============================================
+quality_gates:
+  - name: "架构完整性检查"
+    condition: "system_architecture.md 必须包含所有大纲模块"
+    
+  - name: "详细设计覆盖率"
+    condition: "所有 5 个详细设计文档必须完整"
+    
+  - name: "代码框架可编译"
+    condition: "实现层头文件无语法错误"
+    
+  - name: "审核通过"
+    condition: "quality_report.md 无严重问题"
