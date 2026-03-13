@@ -1,0 +1,230 @@
+# WeAgent 多 Agent 任务定义文件
+# 任务文件用于独立 Agent 执行
+
+tasks:
+  # ============================================
+  # Agent 1: 内容分析专家
+  # ============================================
+  - task_id: "agent-01-analyzer"
+    name: "内容分析专家"
+    role: "从培训大纲中提取核心知识点，建立知识图谱"
+    priority: 1
+    input_file: "/root/.openclaw/workspace/weagent-chassis-ad/input/training_outline.md"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/01-knowledge-graph/knowledge_graph.md"
+    deliverables:
+      - 核心概念清单（含缩写词汇表）
+      - 知识树结构（智能底盘域 + 智驾域）
+      - 模块依赖关系图（Mermaid）
+      - 技术难点识别（P0/P1/P2分级）
+      - 知识点重要性排序
+      - 关键接口速查表
+    
+  # ============================================
+  # Agent 2: 系统架构师
+  # ============================================
+  - task_id: "agent-02-architect"
+    name: "系统架构师"
+    role: "设计智能底盘与高阶智驾的整体系统架构"
+    priority: 2
+    dependencies: ["agent-01-analyzer"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/01-knowledge-graph/knowledge_graph.md"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/02-system-architecture/system_architecture.md"
+    deliverables:
+      - 整体架构概览（域集中式架构图）
+      - 底盘域内部架构
+      - 模块划分与职责定义（含ASIL等级）
+      - 接口定义（智驾↔底盘信号表）
+      - 数据流图（横向/纵向/能量回收）
+      - 安全架构设计（ASIL分配 + 冗余）
+      - 通信架构（车载网络拓扑）
+      - 状态机设计
+
+  # ============================================
+  # Agent 3A: ICC详细设计师
+  # ============================================
+  - task_id: "agent-03a-icc-designer"
+    name: "ICC详细设计师"
+    role: "完成ICC一体化制动控制的详细设计"
+    priority: 3
+    dependencies: ["agent-02-architect"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/02-system-architecture/system_architecture.md"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_icc.md"
+    deliverables:
+      - 功能需求规格（FR列表 + 性能指标）
+      - 制动力分配算法（含伪代码）
+      - 能量回收控制算法
+      - ESC横摆力矩控制
+      - 状态机设计
+      - 故障处理策略
+      - 接口定义（与动力域/VDMC）
+      - 关键参数定义
+      - 测试要点
+
+  # ============================================
+  # Agent 3B: RWS详细设计师
+  # ============================================
+  - task_id: "agent-03b-rws-designer"
+    name: "RWS详细设计师"
+    role: "完成后轮转向控制的详细设计"
+    priority: 3
+    dependencies: ["agent-02-architect"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/02-system-architecture/system_architecture.md"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_rws.md"
+    deliverables:
+      - 功能需求规格
+      - 前后轮转角关系模型
+      - 同/反相增益曲线设计
+      - 电机位置闭环控制（PID）
+      - 状态机设计
+      - 故障处理策略
+      - 接口定义
+      - 关键参数定义
+      - 测试要点
+
+  # ============================================
+  # Agent 3C: ASC详细设计师
+  # ============================================
+  - task_id: "agent-03c-asc-designer"
+    name: "ASC详细设计师"
+    role: "完成空气悬架控制的详细设计"
+    priority: 3
+    dependencies: ["agent-02-architect"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/02-system-architecture/system_architecture.md"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_asc.md"
+    deliverables:
+      - 功能需求规格
+      - 高度控制算法（PID）
+      - 水平保持控制
+      - CDC阻尼控制
+      - 高度模式切换策略
+      - 状态机设计
+      - 故障处理策略
+      - 接口定义
+      - 关键参数定义
+
+  # ============================================
+  # Agent 3D: VDMC详细设计师
+  # ============================================
+  - task_id: "agent-03d-vdmc-designer"
+    name: "VDMC详细设计师"
+    role: "完成整车动态稳定控制的详细设计"
+    priority: 3
+    dependencies: ["agent-02-architect"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/02-system-architecture/system_architecture.md"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_vdmc.md"
+    deliverables:
+      - 功能需求规格
+      - 请求仲裁算法
+      - 多执行器协调控制
+      - 稳定性控制算法
+      - 状态机设计
+      - 故障处理策略
+      - 接口定义
+      - 关键参数定义
+
+  # ============================================
+  # Agent 3E: 智驾策略设计师
+  # ============================================
+  - task_id: "agent-03e-ad-designer"
+    name: "智驾策略设计师"
+    role: "完成高阶智能驾驶控制策略的详细设计"
+    priority: 3
+    dependencies: ["agent-02-architect"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/02-system-architecture/system_architecture.md"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_ad.md"
+    deliverables:
+      - 功能需求规格
+      - LCC横向控制（Stanley算法）
+      - 换道控制算法
+      - ACC纵向控制
+      - 泊车控制算法
+      - 决策与状态机
+      - 关键参数定义
+
+  # ============================================
+  # Agent 4: 实现层架构师
+  # ============================================
+  - task_id: "agent-04-implementer"
+    name: "实现层架构师"
+    role: "设计软件实现层框架和代码结构"
+    priority: 4
+    dependencies: ["agent-03a-icc-designer", "agent-03b-rws-designer", "agent-03c-asc-designer", "agent-03d-vdmc-designer", "agent-03e-ad-designer"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_icc.md"
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_rws.md"
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_asc.md"
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_vdmc.md"
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_ad.md"
+    output_dir: "/root/.openclaw/workspace/weagent-chassis-ad/output/04-implementation/"
+    deliverables:
+      - AUTOSAR软件架构设计
+      - 组件接口定义（C头文件）
+      - 状态机实现框架
+      - 控制算法伪代码
+      - 配置文件模板
+      - 测试框架代码
+
+  # ============================================
+  # Agent 5: 质量审核专家
+  # ============================================
+  - task_id: "agent-05-reviewer"
+    name: "质量审核专家"
+    role: "审核所有设计文档和代码框架的质量"
+    priority: 5
+    dependencies: ["agent-02-architect", "agent-04-implementer"]
+    input_files:
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/02-system-architecture/system_architecture.md"
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/03-detailed-design/detailed_design_*.md"
+      - "/root/.openclaw/workspace/weagent-chassis-ad/output/04-implementation/"
+    output_file: "/root/.openclaw/workspace/weagent-chassis-ad/output/05-quality-report/quality_report.md"
+    deliverables:
+      - 技术准确性审核
+      - 完整性检查（大纲覆盖率）
+      - 一致性检查
+      - 可实现性评估
+      - 文档质量评价
+      - 问题列表与改进建议
+
+# ============================================
+# 执行计划
+# ============================================
+execution_plan:
+  phase_1:
+    name: "内容分析阶段"
+    agents: ["agent-01-analyzer"]
+    parallel: false
+    
+  phase_2:
+    name: "架构设计阶段"
+    agents: ["agent-02-architect"]
+    parallel: false
+    depends_on: phase_1
+    
+  phase_3:
+    name: "详细设计阶段"
+    agents: 
+      - "agent-03a-icc-designer"
+      - "agent-03b-rws-designer"
+      - "agent-03c-asc-designer"
+      - "agent-03d-vdmc-designer"
+      - "agent-03e-ad-designer"
+    parallel: true
+    depends_on: phase_2
+    
+  phase_4:
+    name: "实现层设计阶段"
+    agents: ["agent-04-implementer"]
+    parallel: false
+    depends_on: phase_3
+    
+  phase_5:
+    name: "质量审核阶段"
+    agents: ["agent-05-reviewer"]
+    parallel: false
+    depends_on: phase_4
