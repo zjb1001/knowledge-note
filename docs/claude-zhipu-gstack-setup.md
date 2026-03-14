@@ -18,10 +18,12 @@
 
 ### 智谱 API（来自甘特图 .env）
 ```
-API Key: 1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6
+API Key: ${ZHIPU_API_KEY}  # 从 ~/.claude/env.sh 读取
 Base URL: https://open.bigmodel.cn/api/paas/v4
 Model: glm-4.7
 ```
+
+> ⚠️ **安全提醒**: API Key 已移至 `~/.claude/env.sh`，请勿在文档中记录明文密钥。
 
 ### 配置文件位置
 | 文件 | 路径 |
@@ -99,12 +101,19 @@ gstack-claude-demo/
 
 ## 环境变量
 
+创建 `~/.claude/env.sh` 文件：
+
 ```bash
-export ANTHROPIC_API_KEY="1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6"
-export ANTHROPIC_AUTH_TOKEN="1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6"
+export ANTHROPIC_API_KEY="${ZHIPU_API_KEY}"  # 从安全位置读取
+export ANTHROPIC_AUTH_TOKEN="${ZHIPU_API_KEY}"
 export ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic"
 export ANTHROPIC_MODEL="glm-4.7"
 ```
+
+> 🔒 **安全规范**: 
+> - API Key 存储在 `~/.claude/env.sh` (权限 600)
+> - 切勿提交到 Git 仓库
+> - 定期轮换密钥
 
 ---
 
