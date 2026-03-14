@@ -1,4 +1,4 @@
-# Claude Code + 智谱 GLM-4 + GStack 集成方案
+# Claude Code + 智谱 GLM-4.7 + GStack 集成方案
 
 **创建时间**: 2026-03-14  
 **状态**: ✅ 已完成
@@ -9,7 +9,7 @@
 
 成功集成：
 - **Claude Code** - AI 编程助手
-- **智谱 GLM-4** - 国产大模型（利用甘特图 Token）
+- **智谱 GLM-4.7** - 国产大模型（利用甘特图 Token）
 - **GStack** - 专家团队工作流
 
 ---
@@ -20,7 +20,7 @@
 ```
 API Key: 1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6
 Base URL: https://open.bigmodel.cn/api/paas/v4
-Model: glm-4
+Model: glm-4.7
 ```
 
 ### 配置文件位置
@@ -74,7 +74,7 @@ claude
 
 | 脚本 | 功能 |
 |------|------|
-| setup-claude-zhipu.sh | 配置 Claude Code + 智谱 |
+| setup-claude-zhipu.sh | 配置 Claude Code + 智谱 GLM-4.7 |
 | create-gstack-project.sh | 创建 GStack 项目 |
 
 ---
@@ -103,7 +103,7 @@ gstack-claude-demo/
 export ANTHROPIC_API_KEY="1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6"
 export ANTHROPIC_AUTH_TOKEN="1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6"
 export ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/anthropic"
-export ANTHROPIC_MODEL="glm-4"
+export ANTHROPIC_MODEL="glm-4.7"
 ```
 
 ---
@@ -112,14 +112,14 @@ export ANTHROPIC_MODEL="glm-4"
 
 ```mermaid
 graph TD
-    A[加载配置] --&gt; B[启动 Claude Code]
-    B --&gt; C{选择 GStack 命令}
-    C --&gt;|/plan| D[CEO产品规划]
-    C --&gt;|/review| E[代码审查]
-    C --&gt;|/ship| F[一键发布]
-    C --&gt;|/qa| G[自动化测试]
-    C --&gt;|/browser| H[浏览器自动化]
-    C --&gt;|/retro| I[工程复盘]
+    A[加载配置] --> B[启动 Claude Code]
+    B --> C{选择 GStack 命令}
+    C -->|/plan| D[CEO产品规划]
+    C -->|/review| E[代码审查]
+    C -->|/ship| F[一键发布]
+    C -->|/qa| G[自动化测试]
+    C -->|/browser| H[浏览器自动化]
+    C -->|/retro| I[工程复盘]
 ```
 
 ---
@@ -132,4 +132,4 @@ graph TD
 
 ---
 
-*配置完成时间: 2026-03-14 12:40*
+*配置完成时间: 2026-03-14*

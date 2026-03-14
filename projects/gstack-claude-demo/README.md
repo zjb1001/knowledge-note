@@ -1,6 +1,6 @@
 # gstack-claude-demo
 
-**项目类型**: GStack + Claude Code + 智谱 GLM-4  
+**项目类型**: GStack + Claude Code + 智谱 GLM-4.7  
 **创建时间**: 2026-03-14
 
 ## GStack 命令
@@ -26,11 +26,11 @@ claude
 /ship 准备发布
 ```
 
-## 智谱 GLM-4 配置
+## 智谱 GLM-4.7 配置
 
 - API: 智谱大模型
-- Model: glm-4
+- Model: glm-4.7
 - Base URL: https://open.bigmodel.cn/api/anthropic
 
 ---
-*自动生成于 2026-03-14 12:38*
+*自动生成于 2026-03-14*
