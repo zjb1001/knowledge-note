@@ -1,0 +1,30 @@
+{
+  "project": "brake-controller",
+  "sprint": "Sprint 1",
+  "startDate": "2026-03-14",
+  "endDate": "2026-03-21",
+  "tasks": [
+    {"id": "T1", "name": "搭建 Simulink 环境", "status": "todo", "owner": "算法工程师", "estimated": "4h", "phase": "仿真验证"},
+    {"id": "T2", "name": "车辆动力学建模", "status": "todo", "owner": "算法工程师", "estimated": "8h", "phase": "仿真验证"},
+    {"id": "T3", "name": "制动控制算法设计", "status": "todo", "owner": "算法工程师", "estimated": "8h", "phase": "仿真验证"},
+    {"id": "T4", "name": "仿真测试用例设计", "status": "todo", "owner": "测试工程师", "estimated": "4h", "phase": "仿真验证"},
+    {"id": "T5", "name": "仿真验证与调优", "status": "todo", "owner": "算法工程师", "estimated": "8h", "phase": "仿真验证"},
+    {"id": "T6", "name": "TC3x7 开发环境搭建", "status": "todo", "owner": "嵌入式工程师", "estimated": "4h", "phase": "硬件部署"},
+    {"id": "T7", "name": "MCAL 基础配置", "status": "todo", "owner": "嵌入式工程师", "estimated": "12h", "phase": "硬件部署"},
+    {"id": "T8", "name": "底层驱动开发", "status": "todo", "owner": "嵌入式工程师", "estimated": "8h", "phase": "硬件部署"},
+    {"id": "T9", "name": "代码生成工具链配置", "status": "todo", "owner": "嵌入式工程师", "estimated": "4h", "phase": "硬件部署"},
+    {"id": "T10", "name": "控制算法 C 代码生成", "status": "todo", "owner": "算法工程师", "estimated": "4h", "phase": "算法集成"},
+    {"id": "T11", "name": "算法与驱动集成", "status": "todo", "owner": "嵌入式工程师", "estimated": "8h", "phase": "算法集成"},
+    {"id": "T12", "name": "基础诊断功能实现", "status": "todo", "owner": "嵌入式工程师", "estimated": "4h", "phase": "算法集成"},
+    {"id": "T13", "name": "HIL 测试执行", "status": "todo", "owner": "测试工程师", "estimated": "8h", "phase": "算法集成"},
+    {"id": "T14", "name": "Demo 视频录制", "status": "todo", "owner": "全员", "estimated": "4h", "phase": "交付"},
+    {"id": "T15", "name": "技术文档整理", "status": "todo", "owner": "全员", "estimated": "4h", "phase": "交付"}
+  ],
+  "risks": [
+    {"id": "R1", "description": "控制算法仿真不稳定", "probability": "中", "impact": "高", "mitigation": "准备 fallback PID 方案；D3 冻结算法"},
+    {"id": "R2", "description": "MCAL 配置复杂耗时", "probability": "高", "impact": "中", "mitigation": "D1-D2 专注环境搭建；准备模板工程"},
+    {"id": "R3", "description": "开发板硬件故障", "probability": "低", "impact": "高", "mitigation": "准备备用开发板；提前测试"},
+    {"id": "R4", "description": "工具链授权问题", "probability": "中", "impact": "中", "mitigation": "提前申请试用许可；准备开源替代"},
+    {"id": "R5", "description": "进度延迟风险", "probability": "中", "impact": "中", "mitigation": "每日站会；D3/D5 里程碑检查；允许降级到纯仿真"}
+  ]
+}
