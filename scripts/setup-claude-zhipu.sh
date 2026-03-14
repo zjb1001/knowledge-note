@@ -9,7 +9,7 @@ echo "=========================================="
 echo ""
 
 # 从甘特图获取的智谱 API 配置
-ZHIPU_API_KEY="1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6"
+ZHIPU_API_KEY="xxx"
 ZHIPU_BASE_URL="https://open.bigmodel.cn/api/paas/v4"
 ZHIPU_MODEL="glm-4.7"
 
