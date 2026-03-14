@@ -18,7 +18,7 @@
 
 ### 智谱 API（来自甘特图 .env）
 ```
-API Key: 1cc8725932624b23b97d4de91c182f93.tdGhy1YalWbloLP6
+API Key: xxxx
 Base URL: https://open.bigmodel.cn/api/paas/v4
 Model: glm-4.7
 ```
