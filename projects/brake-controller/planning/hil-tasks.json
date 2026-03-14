@@ -1,0 +1,43 @@
+{
+  "project": "brake-controller-hil",
+  "sprint": "HIL Sprint",
+  "startDate": "2026-03-14",
+  "endDate": "2026-03-21",
+  "objective": "搭建HIL测试环境，支持制动控制器闭环测试",
+  "tasks": [
+    {"id": "H1", "name": "硬件选型与采购确认", "status": "todo", "owner": "系统工程师", "estimated": "2h", "phase": "MVP硬件", "path": "/plan hil/hardware"},
+    {"id": "H2", "name": "工控机系统安装", "status": "todo", "owner": "系统工程师", "estimated": "2h", "phase": "MVP硬件", "path": "/plan hil/os-setup"},
+    {"id": "H3", "name": "DAQ驱动安装与测试", "status": "todo", "owner": "嵌入式工程师", "estimated": "2h", "phase": "MVP硬件", "path": "/qa hil/daq"},
+    {"id": "H4", "name": "信号调理板焊接/组装", "status": "todo", "owner": "硬件工程师", "estimated": "4h", "phase": "MVP硬件", "path": "/review hil/circuit"},
+    {"id": "H5", "name": "硬件连线与检查", "status": "todo", "owner": "硬件工程师", "estimated": "2h", "phase": "MVP硬件", "path": "/review hil/wiring"},
+    {"id": "S1", "name": "Simulink车辆模型搭建", "status": "todo", "owner": "算法工程师", "estimated": "4h", "phase": "MVP软件", "path": "/plan hil/vehicle-model"},
+    {"id": "S2", "name": "Python I/O接口开发", "status": "todo", "owner": "嵌入式工程师", "estimated": "4h", "phase": "MVP软件", "path": "/review hil/io-driver"},
+    {"id": "S3", "name": "模型与I/O集成", "status": "todo", "owner": "嵌入式工程师", "estimated": "2h", "phase": "MVP软件", "path": "/review hil/integration"},
+    {"id": "S4", "name": "基础测试场景编写", "status": "todo", "owner": "测试工程师", "estimated": "2h", "phase": "MVP软件", "path": "/qa hil/test-cases"},
+    {"id": "S5", "name": "联调与数据记录", "status": "todo", "owner": "测试工程师", "estimated": "2h", "phase": "MVP软件", "path": "/qa hil/smoke-test"},
+    {"id": "U1", "name": "实时性优化评估", "status": "todo", "owner": "系统工程师", "estimated": "4h", "phase": "标准版升级", "path": "/plan hil/rt-optimization"},
+    {"id": "U2", "name": "高精度车辆模型开发", "status": "todo", "owner": "算法工程师", "estimated": "8h", "phase": "标准版升级", "path": "/plan hil/advanced-model"},
+    {"id": "U3", "name": "自动化测试框架", "status": "todo", "owner": "测试工程师", "estimated": "8h", "phase": "标准版升级", "path": "/qa hil/automation"},
+    {"id": "U4", "name": "测试报告系统", "status": "todo", "owner": "测试工程师", "estimated": "4h", "phase": "标准版升级", "path": "/ship hil/reporting"}
+  ],
+  "hardware": {
+    "mvp": [
+      {"item": "工控PC", "spec": "i7+16GB+SSD", "cost": "¥8k", "status": "待采购"},
+      {"item": "USB DAQ", "spec": "NI USB-6001", "cost": "¥2k", "status": "待采购"},
+      {"item": "信号调理板", "spec": "自制/开源", "cost": "¥1k", "status": "待制作"},
+      {"item": "模拟执行器", "spec": "电阻负载+LED", "cost": "¥500", "status": "待制作"}
+    ],
+    "standard": [
+      {"item": "实时工控机", "spec": "NI PXIe-8840", "cost": "¥30k", "status": "评估中"},
+      {"item": "I/O模块", "spec": "NI PXIe-6341", "cost": "¥15k", "status": "评估中"},
+      {"item": "CAN卡", "spec": "NI PXIe-8510", "cost": "¥10k", "status": "评估中"},
+      {"item": "负载箱", "spec": "电子负载", "cost": "¥20k", "status": "评估中"}
+    ]
+  },
+  "risks": [
+    {"id": "R1", "description": "USB延迟不稳定", "probability": "高", "impact": "中", "mitigation": "使用异步缓冲；接受软实时"},
+    {"id": "R2", "description": "信号调理不匹配", "probability": "中", "impact": "高", "mitigation": "提前确认电压范围；准备可调电路"},
+    {"id": "R3", "description": "Simulink模型不收敛", "probability": "中", "impact": "高", "mitigation": "简化模型；固定步长求解器"},
+    {"id": "R4", "description": "硬件兼容性", "probability": "中", "impact": "中", "mitigation": "先用虚拟机测试驱动"}
+  ]
+}
