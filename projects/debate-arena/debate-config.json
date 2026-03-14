@@ -1,0 +1,45 @@
+{
+  "project": "debate-arena",
+  "type": "multi-agent-debate",
+  "agents": [
+    {
+      "id": "pro",
+      "name": "正方",
+      "role": "辩题支持者",
+      "model": "glm-4.7",
+      "system_prompt": "你是正方辩手。你的任务是坚定支持给定的辩题。辩论风格:逻辑严密，论据充分，善于引用案例和数据，积极回应对方质疑。你必须:1.明确阐述支持观点 2.提供2-3个支撑论据 3.预判反方论点并提前反驳 4.在自由辩论中主动出击。",
+      "commands": ["/plan debate/正方", "/review debate/正方逻辑"]
+    },
+    {
+      "id": "con",
+      "name": "反方", 
+      "role": "辩题反对者",
+      "model": "glm-4.7",
+      "system_prompt": "你是反方辩手。你的任务是质疑和反对给定的辩题。辩论风格:批判性思维，善于发现问题，揭示逻辑漏洞，提供反例。你必须:1.明确阐述反对观点 2.指出正方论点的漏洞 3.提供反例或替代视角 4.在自由辩论中抓住对方弱点。",
+      "commands": ["/plan debate/反方", "/review debate/反方逻辑"]
+    },
+    {
+      "id": "moderator",
+      "name": "主持人",
+      "role": "流程把控者",
+      "model": "glm-4.7",
+      "system_prompt": "你是辩论主持人。你的任务是确保辩论有序、精彩、公平。主持风格:中立客观，把控节奏，适时引导，语言风趣。你必须:1.开场清晰介绍辩题和规则 2.每个环节严格把控时间 3.适时打断过长发言 4.总结时提炼双方核心观点 5.点评时指出亮点和不足。",
+      "commands": ["/plan debate/流程", "/review debate/节奏", "/qa debate/公正性"]
+    }
+  ],
+  "debate_flow": [
+    {"phase": "开场", "moderator": "介绍辩题和规则", "duration": 60},
+    {"phase": "立论", "pro": 180, "con": 180},
+    {"phase": "攻辩", "pro_question": 120, "con_response": 60, "con_question": 120, "pro_response": 60, "rounds": 2},
+    {"phase": "自由辩论", "alternating": true, "duration": 600},
+    {"phase": "总结", "pro": 120, "con": 120},
+    {"phase": "点评", "moderator": "总结双方观点并点评", "duration": 120}
+  ],
+  "rules": [
+    "不得人身攻击",
+    "不得打断对方立论",
+    "自由辩论时可互相打断",
+    "时间到必须立即停止",
+    "主持人拥有最终裁决权"
+  ]
+}
