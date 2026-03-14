@@ -19,6 +19,7 @@
 ### 智谱 API（来自甘特图 .env）
 ```
 API Key: ${ZHIPU_API_KEY}  # 从 ~/.claude/env.sh 读取
+API Key: xxxx
 Base URL: https://open.bigmodel.cn/api/paas/v4
 Model: glm-4.7
 ```
