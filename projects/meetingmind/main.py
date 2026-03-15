@@ -2,7 +2,7 @@
 """
 MeetingMind - 智能会议纪要系统
 ═══════════════════════════════════════════════════════════════
-版本: 2.1.0
+版本: 2.2.0
 日期: 2026-03-15
 
 架构: 多Agent协作系统
@@ -10,13 +10,14 @@ MeetingMind - 智能会议纪要系统
   - ASR Agent: 语音识别
   - Summarizer Agent: 纪要生成
   - Evaluator Agent: 质量评价
-  - ArchitectureExpert Agent: 架构评审 (v2.1新增)
+  - ArchitectureExpert Agent: 架构评审
+  - PerformanceProfiler Agent: 性能分析 (v2.2新增)
 
 作者: MeetingMind Team
 ═══════════════════════════════════════════════════════════════
 """
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 __author__ = "MeetingMind Team"
 __date__ = "2026-03-15"
 
@@ -31,6 +32,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core.evaluator import MeetingEvaluator
 from core.architecture_expert import ArchitectureExpert
+from core.profiler import PerformanceProfiler
 
 
 def print_banner():
@@ -45,10 +47,10 @@ def print_banner():
     print("  │  音频捕获    │  语音识别   │  纪要生成                │")
     print("  └─────────────┴─────────────┴─────────────┴─────────────┘")
     print("                           ↓")
-    print("  ┌─────────────────────────┬─────────────────────────────┐")
-    print("  │    🎯 Evaluator Agent   │    🏛️ Architecture Expert   │")
-    print("  │    质量评价与监督       │    架构评审与设计建议       │")
-    print("  └─────────────────────────┴─────────────────────────────┘")
+    print("  ┌──────────────┬──────────────┬──────────────────────────┐")
+    print("  │ 🎯 Evaluator │ 🏛️ Architect│ 🚀 Profiler              │")
+    print("  │ 质量评价     │ 架构评审     │ 性能分析                 │")
+    print("  └──────────────┴──────────────┴──────────────────────────┘")
     print("═" * 70)
     print()
 
@@ -264,17 +266,26 @@ def main():
 示例:
   python main.py                    # 运行演示
   python main.py --arch-review      # 包含架构评审
+  python main.py --profile          # 包含性能分析
   python main.py --version          # 显示版本
         """
     )
     parser.add_argument('--version', action='version', version=f'MeetingMind v{__version__}')
     parser.add_argument('--arch-review', action='store_true', help='启用架构专家评审')
+    parser.add_argument('--profile', action='store_true', help='启用性能分析')
     parser.add_argument('--output-dir', default='.', help='输出目录')
     parser.add_argument('--input', help='输入音频/文本文件路径')
     
     args = parser.parse_args()
     
     print_banner()
+    
+    # 初始化性能分析器
+    profiler = None
+    if args.profile:
+        from core.profiler import PerformanceProfiler
+        profiler = PerformanceProfiler()
+        print("🚀 Performance Profiler 已启用\n")
     
     # 加载配置
     config = load_config()
@@ -296,11 +307,23 @@ def main():
     print("🚀 开始生成会议纪要...")
     print("─" * 70)
     
-    result = generate_minutes(transcript, include_arch_review=args.arch_review)
+    if profiler:
+        with profiler.measure("总体流程"):
+            result = generate_minutes(transcript, include_arch_review=args.arch_review)
+        profiler.print_summary()
+    else:
+        result = generate_minutes(transcript, include_arch_review=args.arch_review)
     
     # 保存输出
     print("\n💾 保存输出文件...")
     save_outputs(result, args.output_dir)
+    
+    # 保存性能报告 (如果启用)
+    if profiler:
+        perf_file = os.path.join(args.output_dir, f"performance_report_{result['timestamp']}.md")
+        with open(perf_file, 'w', encoding='utf-8') as f:
+            f.write(profiler.generate_report('markdown'))
+        print(f"   ✅ 性能报告: {perf_file}")
     
     # 显示摘要
     print("\n" + "═" * 70)
@@ -312,6 +335,9 @@ def main():
     
     if args.arch_review:
         print("✅ 已生成架构评审报告")
+    
+    if args.profile:
+        print("✅ 已生成性能分析报告")
     
     print("\n" + "═" * 70)
     print("✨ MeetingMind 处理完成!")

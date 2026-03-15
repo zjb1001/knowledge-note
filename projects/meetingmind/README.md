@@ -6,14 +6,15 @@
 
 ---
 
-## 🎯 核心功能 (v2.1)
+## 🎯 核心功能 (v2.2)
 
 1. **音频捕获** - 通过虚拟音频设备录制会议音频
 2. **语音识别** - 智谱/Whisper API 实时转录
 3. **智能摘要** - LLM自动生成结构化纪要
 4. **行动项提取** - 自动识别 Who + What + When
 5. **🎯 质量评价** - Evaluator Agent 自动评估纪要质量
-6. **🏛️ 架构评审** - Architecture Expert 评审技术决策 (v2.1新增)
+6. **🏛️ 架构评审** - Architecture Expert 评审技术决策
+7. **🚀 性能分析** - Performance Profiler 定位性能瓶颈 (v2.2新增)
 
 ---
 
@@ -29,6 +30,9 @@ python main.py
 # 包含架构专家评审
 python main.py --arch-review
 
+# 包含性能分析
+python main.py --profile
+
 # 查看版本
 python main.py --version
 ```
@@ -39,14 +43,17 @@ python main.py --version
 
 ```
 meetingmind/
-├── main.py                   # 主入口 (v2.1.0)
+├── main.py                   # 主入口 (v2.2.0)
+├── start.sh                  # 快速启动脚本
+├── install.sh                # 一键安装脚本
 ├── core/
 │   ├── __init__.py
 │   ├── recorder.py           # 音频录制 Agent
 │   ├── asr.py               # 语音识别 Agent
 │   ├── summarizer.py        # 纪要生成 Agent
 │   ├── evaluator.py         # 🎯 质量评价 Agent
-│   └── architecture_expert.py  # 🏛️ 架构评审 Agent (v2.1)
+│   ├── architecture_expert.py  # 🏛️ 架构评审 Agent
+│   └── profiler.py          # 🚀 性能分析 Agent (v2.2)
 ├── docs/
 │   └── plan-report.md       # CEO规划报告
 ├── requirements.txt
@@ -96,6 +103,29 @@ Raw Audio (PCM)
 | 风险评估 | 潜在问题和缓解措施 |
 | 资源匹配 | 人力/时间/技术栈的匹配度 |
 | 技术债务 | 识别临时方案和技术债务信号 |
+
+### 🚀 Performance Profiler 分析维度 (v2.2)
+
+| 维度 | 说明 |
+|------|------|
+| 执行时间 | 各组件耗时及占比 |
+| 内存占用 | 峰值内存使用 |
+| 瓶颈识别 | 按时间占比排序的瓶颈组件 |
+| 优化建议 | 针对性的优化策略和预期加速比 |
+| 优化阶梯 | 参考性能优化最佳实践 |
+
+**优化阶梯参考**:
+
+| 层级 | 方法 | 预期加速 | 成本 |
+|------|------|---------|------|
+| 1 | 算法优化 | 10-1000x | 低 |
+| 2 | 数据结构 | 2-10x | 低 |
+| 3 | JIT编译器(PyPy) | 6-66x | 极低 |
+| 4 | 向量化(NumPy/JAX) | 10-1600x | 中 |
+| 5 | C扩展(Cython) | 10-100x | 高 |
+| 6 | 异步/并行 | 2-8x | 中 |
+
+**核心理念**: 先定位瓶颈，再选择优化策略，避免盲目重写。
 
 ---
 
