@@ -6,33 +6,31 @@
 
 ---
 
-## 🎯 核心功能
+## 🎯 核心功能 (v2.1)
 
 1. **音频捕获** - 通过虚拟音频设备录制会议音频
 2. **语音识别** - 智谱/Whisper API 实时转录
 3. **智能摘要** - LLM自动生成结构化纪要
 4. **行动项提取** - 自动识别 Who + What + When
 5. **🎯 质量评价** - Evaluator Agent 自动评估纪要质量
+6. **🏛️ 架构评审** - Architecture Expert 评审技术决策 (v2.1新增)
 
 ---
 
 ## 🚀 快速开始
 
 ```bash
-# 1. 安装依赖
+# 安装依赖
 pip install -r requirements.txt
 
-# 2. 配置环境变量
-export ANTHROPIC_API_KEY="your_key"
-export ANTHROPIC_BASE_URL="https://open.bigmodel.cn/api/paas/v4"
-export ANTHROPIC_MODEL="glm-4.7"
-
-# 3. 设置虚拟音频设备 (macOS)
-brew install blackhole-2ch
-# 系统设置 → 音频 → 输出 → BlackHole 2ch
-
-# 4. 运行
+# 运行主程序 (演示模式)
 python main.py
+
+# 包含架构专家评审
+python main.py --arch-review
+
+# 查看版本
+python main.py --version
 ```
 
 ---
@@ -41,16 +39,18 @@ python main.py
 
 ```
 meetingmind/
-├── main.py              # CLI入口
-├── demo_v2.py           # v2.0演示 (含Evaluator)
+├── main.py                   # 主入口 (v2.1.0)
 ├── core/
-│   ├── recorder.py      # 音频录制
-│   ├── asr.py           # 语音识别
-│   ├── summarizer.py    # 纪要生成
-│   └── evaluator.py     # 🎯 Evaluator Agent - 质量评价
+│   ├── __init__.py
+│   ├── recorder.py           # 音频录制 Agent
+│   ├── asr.py               # 语音识别 Agent
+│   ├── summarizer.py        # 纪要生成 Agent
+│   ├── evaluator.py         # 🎯 质量评价 Agent
+│   └── architecture_expert.py  # 🏛️ 架构评审 Agent (v2.1)
 ├── docs/
-│   └── plan-report.md   # CEO规划报告
-└── requirements.txt
+│   └── plan-report.md       # CEO规划报告
+├── requirements.txt
+└── README.md
 ```
 
 ---
@@ -68,9 +68,12 @@ Raw Audio (PCM)
     ↓
 [Evaluator Agent] → 质量评价与改进建议
     ↓
+[Architecture Expert] → 架构评审与设计建议 (可选)
+    ↓
 输出: 
   ├── Markdown纪要 (参会人+议题+行动项)
-  └── 评价报告 (评分+改进建议)
+  ├── 评价报告 (评分+改进建议)
+  └── 架构评审报告 (技术决策评估)
 ```
 
 ### 🎯 Evaluator Agent 评价维度
@@ -82,6 +85,17 @@ Raw Audio (PCM)
 | 📐 结构性 | 20% | 格式规范、层次清晰 |
 | 🎯 行动项 | 25% | Who/What/When 提取完整度 |
 | 📖 可读性 | 10% | 语言简洁、逻辑清晰 |
+
+### 🏛️ Architecture Expert 评审维度
+
+| 维度 | 说明 |
+|------|------|
+| 技术可行性 | 决策是否在技术可实现范围内 |
+| 架构一致性 | 与现有系统架构的兼容性 |
+| 扩展性 | 未来增长的可持续性 |
+| 风险评估 | 潜在问题和缓解措施 |
+| 资源匹配 | 人力/时间/技术栈的匹配度 |
+| 技术债务 | 识别临时方案和技术债务信号 |
 
 ---
 
@@ -137,6 +151,37 @@ Raw Audio (PCM)
 - 建议精简语言，使用更多列表和表格提升可读性
 ```
 
+### 🏛️ 架构评审报告 (可选)
+
+```markdown
+# Architecture Expert 评审报告
+
+## 总体评估
+
+| 指标 | 结果 |
+|------|------|
+| **总体等级** | 良好 |
+| **可行性评分** | 85/100 |
+| **风险等级** | 中 |
+
+## 评审发现
+
+### 🟡 技术可行性 (中风险)
+- 本周任务过于集中，存在延期风险
+
+### 🔴 架构一致性 (高风险)
+- 检测到'临时方案'，建议规划长期解决计划
+
+## 架构专家建议
+1. 高优先级任务较多，建议进行任务排序和依赖分析
+2. 建议在下次会议中回顾技术债务处理进展
+3. 建议建立技术方案文档，确保知识沉淀
+
+## ⚠️ 技术债务预警
+- 检测到临时方案，建议规划长期解决计划
+- 存在推迟优化的倾向，建议记录技术债务
+```
+
 ---
 
 ## 🛠️ GStack 开发命令
@@ -165,11 +210,13 @@ claude
 - [x] /plan CEO规划 (完成)
 - [x] MVP核心代码 (完成)
 - [x] 🎯 Evaluator Agent 质量评价 (v2.0)
+- [x] 🏛️ Architecture Expert 架构评审 (v2.1)
 - [ ] 实时流式ASR
 - [ ] 说话人分离
 - [ ] Teams Bot集成
 - [ ] 多语言支持
 - [ ] 质量评分趋势分析
+- [ ] 自迭代优化闭环
 
 ---
 
