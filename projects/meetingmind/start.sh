@@ -27,6 +27,7 @@ source venv/bin/activate
 # 解析参数
 MODE="demo"
 ARCH_REVIEW=""
+PROFILE=""
 OUTPUT_DIR="./output"
 
 while [[ $# -gt 0 ]]; do
@@ -37,6 +38,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --arch-review)
             ARCH_REVIEW="--arch-review"
+            shift
+            ;;
+        --profile)
+            PROFILE="--profile"
             shift
             ;;
         --output)
@@ -53,6 +58,7 @@ while [[ $# -gt 0 ]]; do
             echo "选项:"
             echo "  --live          录制真实会议音频"
             echo "  --arch-review   包含架构专家评审"
+            echo "  --profile       包含性能分析"
             echo "  --output DIR    指定输出目录 (默认: ./output)"
             echo "  --version       显示版本"
             echo "  --help          显示此帮助"
@@ -60,6 +66,7 @@ while [[ $# -gt 0 ]]; do
             echo "示例:"
             echo "  ./start.sh                    # 演示模式"
             echo "  ./start.sh --arch-review      # 演示+架构评审"
+            echo "  ./start.sh --profile          # 演示+性能分析"
             echo "  ./start.sh --live             # 录制真实会议"
             exit 0
             ;;
@@ -100,6 +107,7 @@ fi
 # 运行主程序
 python3 main.py \
     $ARCH_REVIEW \
+    $PROFILE \
     --output-dir "$OUTPUT_DIR"
 
 echo ""
@@ -109,5 +117,6 @@ echo "输出文件:"
 ls -1t "$OUTPUT_DIR"/meeting_minutes_*.md 2>/dev/null | head -1 | xargs -I {} echo "   📄 {}"
 ls -1t "$OUTPUT_DIR"/evaluation_report_*.md 2>/dev/null | head -1 | xargs -I {} echo "   📊 {}"
 ls -1t "$OUTPUT_DIR"/architecture_review_*.md 2>/dev/null | head -1 | xargs -I {} echo "   🏛️  {}"
+ls -1t "$OUTPUT_DIR"/performance_report_*.md 2>/dev/null | head -1 | xargs -I {} echo "   🚀  {}"
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
