@@ -1,0 +1,71 @@
+name: Check Dev Branch Sync with Main
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-sync:
+    name: Check if dev is in sync with main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch both branches
+        run: |
+          git fetch origin main
+          git fetch origin dev
+
+      - name: Compare dev with main
+        id: sync_check
+        run: |
+          BEHIND=$(git rev-list --count origin/dev..origin/main)
+          AHEAD=$(git rev-list --count origin/main..origin/dev)
+
+          echo "dev is ${BEHIND} commit(s) behind main"
+          echo "dev is ${AHEAD} commit(s) ahead of main"
+
+          echo "behind=${BEHIND}" >> "$GITHUB_OUTPUT"
+          echo "ahead=${AHEAD}"   >> "$GITHUB_OUTPUT"
+
+          if [ "$BEHIND" -eq 0 ] && [ "$AHEAD" -eq 0 ]; then
+            echo "status=in-sync" >> "$GITHUB_OUTPUT"
+          elif [ "$BEHIND" -gt 0 ] && [ "$AHEAD" -gt 0 ]; then
+            echo "status=diverged" >> "$GITHUB_OUTPUT"
+          elif [ "$BEHIND" -gt 0 ]; then
+            echo "status=behind" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=ahead" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report sync status
+        run: |
+          STATUS="${{ steps.sync_check.outputs.status }}"
+          BEHIND="${{ steps.sync_check.outputs.behind }}"
+          AHEAD="${{ steps.sync_check.outputs.ahead }}"
+
+          if [ "$STATUS" = "in-sync" ]; then
+            echo "✅ dev branch is fully in sync with main."
+          elif [ "$STATUS" = "behind" ]; then
+            echo "❌ dev branch is ${BEHIND} commit(s) behind main. Please merge main into dev."
+            exit 1
+          elif [ "$STATUS" = "diverged" ]; then
+            echo "❌ dev branch has diverged from main: ${BEHIND} commit(s) behind and ${AHEAD} commit(s) ahead. Please rebase or merge main into dev."
+            exit 1
+          else
+            echo "ℹ️  dev branch is ${AHEAD} commit(s) ahead of main (pending merge to main)."
+          fi
